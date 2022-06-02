@@ -1,0 +1,149 @@
+---
+title: "WIE2003 Alternative Assessment 2"
+author: "Lim Zheng Yu"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## (a)
+Find and get a dataset from the datasets available within R. 
+Perform exploratory data analysis (EDA) and prepare a codebook on that dataset using a newer method in R. 
+Label your work clearly on EDA and codebook.
+
+
+### The dataset chosen from the datasets library is "quakes". This data set shows the locations of 1000 seismic events (i.e. earthquakes) of Richter Magnitude of above 4.0 near Fiji since 1964. 
+```{r echo=FALSE}
+library(tibble)
+library(datasets)
+quakes <- as.data.frame(quakes)
+df <- quakes %>% tibble::rownames_to_column("No.")
+str(df)
+```
+
+
+### The first few observations of this dataset are as below:
+```{r echo=FALSE}
+head(df)
+```
+
+\newpage
+### A summary of the dataset
+```{r echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}
+summary(df)
+```
+
+
+### This plot shows the approximate location of those seismic events according to their longitude and latitude
+```{r echo=FALSE, message=FALSE, warning=FALSE, error=FALSE}
+install.packages("tidyverse", repos="https://mirrors.upm.edu.my/CRAN/")
+library(tidyverse)
+ggplot(data=df) + geom_point(mapping=aes(x=long, y=lat)) + labs(title='Locations of Seismic Events near Fiji', x="Longitude", y="Latitude")
+```
+
+\newpage
+### The below figure shows the correlation between the magnitude of earthquakes and the number of stations reporting those events
+```{r echo=FALSE}
+plot(jitter(df$mag, amount = 0.05), df$stations, 
+     pch = 20,
+     ylab = "Number of Stations Reporting",
+     xlab = "Magnitude",
+     main = "Fiji Earthquakes Magnitude and Reporting",
+     col = rgb(0.1, 0.2, 0.8, 0.3))
+```
+
+The above figures show that: 
+
+* Most seismic activity occurs at locations with approximate latitude of -10 to -20, longitude of 165 to 170 and latitude of -15 to -25, longitude of 180 to 185.
+* The higher the magnitude of the earthquakes, the higher number of stations are able to report those earthquakes.
+* As the magnitude of seismic activity increases, the number of seismic activity decreases.
+
+\newpage
+## (b)
+Demonstrate these FIVE (5) functions of dplyr for data manipulation:
+
+* filter ( )
+* arrange ( )
+* mutate ( )
+* select ( ) 
+* summarise ( )
+
+You can create your own sensible dataset in certain context for this question with at least 15 observations (rows) and 4 features (columns) or you can get any suitable dataset online.
+Show the R code and provide a short explanation on what each function does for each produced output.
+
+\newpage
+### Lawyers' Ratings of State Judges in the US Superior Court
+```{r echo=FALSE}
+library(dplyr)
+us <- data.frame(USJudgeRatings)
+print(us)
+```
+[,1]	CONT	Number of contacts of lawyer with judge.
+[,2]	INTG	Judicial integrity.
+[,3]	DMNR	Demeanor.
+[,4]	DILG	Diligence.
+[,5]	CFMG	Case flow managing.
+[,6]	DECI	Prompt decisions.
+[,7]	PREP	Preparation for trial.
+[,8]	FAMI	Familiarity with law.
+[,9]	ORAL	Sound oral rulings.
+[,10]	WRIT	Sound written rulings.
+[,11]	PHYS	Physical ability.
+[,12]	RTEN	Worthy of retention.
+\newpage
+i. filter()
+
+The filter() function allows us to choose data from the dataset which satisfy the provided conditions.
+```{r}
+# When passed in the condition of DILG >= 8.0, only Judges 
+# with a diligence rating of 8.0 and above are shown
+us %>% filter(DILG >= 8.0)
+# we can separate multiple conditions using a comma which functions as an AND operator
+us %>% filter(PHYS <= 7.5, RTEN >= 6.5)
+```
+
+\newpage
+ii. arrange()
+
+The arrange() function takes in column names as parameters and orders the data accordingly.
+```{r}
+# CONT attribute is passed in as a parameter.
+# Hence the data will arrange according to the value of CONT.
+us %>% arrange(CONT)
+# When multiple arguments are provided, the additional parameter will be used
+# to break ties of the values of preceding parameters.
+us %>% arrange(INTG, DMNR)
+```
+
+\newpage
+iii. mutate()
+
+The mutate() function adds a new column to the dataset which is based on existing column from the dataset.
+The provided parameter will be the name of the new column and the value of the parameter is the definition of it.
+\
+```{r}
+us %>% mutate(DECI_PCTG = (DECI / 10) * 100)
+```
+
+\newpage
+iv. select()
+
+The select() function chooses the columns that we have passed in as parameters to be outputted.
+```{r}
+us %>% mutate(DECI_PCTG = (DECI / 10) * 100) %>% select(DECI_PCTG, DECI)
+```
+
+\newpage
+v. summarise()
+
+The summarise() function summarizes the whole dataset into one row based on the parameters provided.
+```{r}
+# The parameters provided are individual of each other 
+# as it only provides the summary of its own column
+us %>% summarise(FAMI=mean(FAMI, na.rm=TRUE), ORAL=max(ORAL, na.rm=TRUE))
+```
